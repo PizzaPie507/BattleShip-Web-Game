@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>Battleship</title>
+
+  <style>
+    html{
+      background-color: rgb(0, 0, 70);
+    }
+
+    
+    .center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #turnStatus{
+      display: flex;
+      justify-content: center;
+      font-size: 30px;
+      font-weight: bold;
+      text-decoration: underline;
+      color: white
+    }
+
+    #playerTable{
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    #shipsleft{
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      p{
+        color:white
+      }
+    }
+
+    #player1Text{
+      display: flex;
+      justify-content: left;
+      gap: 50px;
+      font-size: 25px;
+      font-weight: bold;
+      padding-left: 160px;
+    }
+
+    #player2Text{
+      display: flex;
+      justify-content: right;
+      gap: 50px;
+      font-size: 25px;
+      font-weight: bold;
+      padding-right: 160px
+    }
+
+    table, td{
+      border: 2px solid rgb(255, 255, 255);
+      border-radius: 5px;
+      padding: 5px;
+    }
+    td{
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      width: 25px;
+      height: 25px;
+    }
+
+    #blueText{
+      color:aqua;
+    }
+
+    #greyText{
+      color:grey;
+    }
+
+    #redText{
+      color:red;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  
+  <p id="turnStatus">Player 1 Setup</p>
+
+  <p style="display: flex; color:white; justify-content: center; margin: 0"> </p>
+  <div id="playerTable">
+  <div>
+    <div id="player1Text">
+      <p style="color:white" id="player1Face">(ಠ_ಠ)</p>
+      <p style="color:white" id="playerText1">Player 1</p>
+    </div>
+    <div id="shipsleft">
+      <div>
+        <p id="De1">Destroyer (Length 2)</p>
+        <p id="Su1">Submarine (Length 3)</p>
+        <p id="Cr1">Cruiser (Length 3)</p>
+        <p id="Ba1">Battleship (Length 4)</p>
+        <p id="Ca1">Carrier (Length 5)</p>
+      </div>
+      <table id="playerTable1"></table>
+    </div>
+  </div>
+<br>
+<div>
+  <div id="player2Text">
+  <p style="color:white" id="playerText2">Player 2</p>
+  <p style="color:white" id="player2Face">(＾▽＾)</p>
+  </div>
+  <div id="shipsleft">
+  <table id="playerTable2"></table>
+   <div>
+        <p id="De2">Destroyer (Length 2)</p>
+        <p id="Su2">Submarine (Length 3)</p>
+        <p id="Cr2">Cruiser (Length 3)</p>
+        <p id="Ba2">Battleship (Length 4)</p>
+        <p id="Ca2">Carrier (Length 5)</p>
+      </div>
+  </div>
+</div>
+</div>
+
+<p id="statusText"></p>
+
+<img src="logo-trans.png" alt="Game logo" style="width: 25%; height: 25%" class="center">
+<br>
+<div id="shipsleft">
+  <div>
+<p id="shipsleft" style="text-decoration: underline; font-weight:bold">Game Index</p>
+<p id="shipsleft" style="text-decoration: underline;">Setup Phase</p>
+<p id="shipsleft">'-' - Valid Tile to place Ship</p>
+<p id="shipsleft">'X' - Invalid Tile to place Ship</p>
+<p id="shipsleft">De, Su, Cr, Ba, Ca - Ship on Tile</p>
+<p id="shipsleft" style="text-decoration: underline;">Gameplay Phase</p>
+<p id="shipsleft">'~' - Tile not yet checked</p>
+<p id="shipsleft">'O' - Hit (ship on tile)</p>
+<p id="shipsleft">'X' - Miss (ship not on tile)</p>
+
+<br>
+<p id="shipsleft">Game logo made with this website: https://patorjk.com/software/taag/#p=display&f=Graffiti&t=Type+Something+&x=none&v=4&h=4&w=80&we=false</p>
+</div>
+</div>
+
+
+
+
+
+<script>
+
+//ships is used for displaying the proper ship name whenever a ship is destroyed
+const ships = {
+  De: 'destroyer',
+  Su: 'submarine',
+  Cr: 'cruiser',
+  Ba: 'battleship',
+  Ca: 'carrier'
+
+}
+
+//shipList1 is used to cross out a ship for player 1 if that ship is destroyed
+const shipList1 = {
+  De: document.getElementById('De1'),
+  Su: document.getElementById('Su1'),
+  Cr: document.getElementById('Cr1'),
+  Ba: document.getElementById('Ba1'),
+  Ca: document.getElementById('Ca1')
+
+}
+
+//shipList2 is used to cross out a ship for player 1 if that ship is destroyed
+const shipList2 = {
+  De: document.getElementById('De2'),
+  Su: document.getElementById('Su2'),
+  Cr: document.getElementById('Cr2'),
+  Ba: document.getElementById('Ba2'),
+  Ca: document.getElementById('Ca2')
+
+}
+
+//player1 stores all information for the first player
+let player1 = {
+    playerNum: 1,
+    table: document.getElementById('playerTable1'),
+    playerText: document.getElementById('playerText1'),
+    playerFace: document.getElementById('player1Face'),
+    shipList: shipList1,
+    board: [],
+    totalHp : 17,
+    De : 0,
+    Su : 0,
+    Cr : 0,
+    Ba : 0,
+    Ca : 0
+}
+
+//player2 stores all information for the second player
+let player2 = {
+    playerNum: 2,
+    playerText: document.getElementById('playerText2'),
+    table : document.getElementById('playerTable2'),
+    playerFace: document.getElementById('player2Face'),
+    shipList: shipList2,
+    board: [],
+    totalHp : 17,
+    De : 0,
+    Su : 0,
+    Cr : 0,
+    Ba : 0,
+    Ca : 0
+}
+//These constants define row and column dimensions
+const row = 10;
+const col = 10;
+//Turn is used to determine which player's turn it is during play phase
+turn = 0;
+//setupStep is used to determine which player's turn it is during setup phase
+setupStep = 1
+//Used to determine if ship destroyed text is currently displayed and should be removed next turn
+textDisplayed = 0
+//These variables are used during setup phase to insure the phase functions properly
+var lastCol = -1
+var lastRow = -1
+var vertShip = 0;
+//Used for text flashin animation
+var textFlash = 0
+//Used to change turn text at top of site
+const turnText = document.getElementById('turnStatus')
+
+//For loop creates arrays that store information regarding each tile
+for(let i = 0; i < row; i++)
+{
+    player1.board[i] = [];
+    player2.board[i] = [];
+    for(let j = 0; j < col; j++)
+    {
+        player1.board[i][j] = {status: '-', col: j, row: i, ship: 'NA', color: 'white'}
+        player2.board[i][j] = {status: '-', col: j, row: i, ship: 'NA', color: 'white'}
+    }
+}
+
+//arrayToTable converts the arrays to tables that can be displayed to the user, as well as creates functionality for table cells
+function arrayToTable(curPlayer){
+  curPlayer.table.innerHTML = ''
+  
+  
+  for(let i = 0; i < row; i++){
+        const tableRow = document.createElement('tr')
+        for(let j = 0; j < col; j++){
+            const cellObj = curPlayer.board[i][j];
+            const cell = document.createElement('td');
+
+            cell.textContent = cellObj.status;
+            cell.style.color = cellObj.color;
+
+            cell.addEventListener('click', () => {
+              if(setupStep == curPlayer.playerNum)
+            {
+              if(curPlayer.De < 2)
+            {
+              setUpPhase(curPlayer, 'De', 2, cell, cellObj)
+            }
+              else if(curPlayer.De == 2 && curPlayer.Su < 3)
+            {
+              setUpPhase(curPlayer, 'Su', 3, cell, cellObj)
+            }
+            else if(curPlayer.Su == 3 && curPlayer.Cr < 3)
+            {
+              setUpPhase(curPlayer, 'Cr', 3, cell, cellObj)
+            }
+            else if(curPlayer.Cr == 3 && curPlayer.Ba < 4)
+            {
+              setUpPhase(curPlayer, 'Ba', 4, cell, cellObj)
+            }
+            else if(curPlayer.Ba == 4 && curPlayer.Ca < 5)
+            {
+              setUpPhase(curPlayer, 'Ca', 5, cell, cellObj)
+            }
+            if(curPlayer.Ca == 5)
+            {
+              if(setupStep == 1)
+              {
+                setUpComplete(curPlayer)
+                turnText.textContent = 'Player 2 Setup'
+                setupStep = 2
+              }
+              else if(setupStep == 2)
+              {
+                setUpComplete(curPlayer)
+                setupStep = 0
+                turnText.textContent = "Player 1's Turn"
+                turn = 1
+              }
+            }
+            }
+
+            else if(!(turn == curPlayer.playerNum) && !(turn == 0))
+            {
+              playPhase(curPlayer, cellObj, cell)
+            }
+
+
+            })
+
+            tableRow.appendChild(cell);
+        }
+        curPlayer.table.appendChild(tableRow);
+    }
+}
+
+
+//SetUpPhase allows players to place their ship on their board
+function setUpPhase(thisPlayer, shipType, shipTiles, thisCell, thisCellObj){
+  if(thisCellObj.status == '-')
+{
+  thisCellObj.status = shipType;
+  thisCellObj.ship = shipType;
+  thisCell.textContent = thisCellObj.status;
+  thisPlayer[shipType]++;
+  
+
+  //This if statement is used to ensure that the player can only place ship tiles on tiles next to the first ship tile
+  if(thisPlayer[shipType] == 1)
+{
+  for(let i = 0; i < row; i++)
+{
+  for(let j = 0; j < col; j++)
+{
+  if(thisPlayer.board[i][j].status == '-' && !(thisCellObj.col == j && thisCellObj.row == i) && !(thisCellObj.col+1 == j && thisCellObj.row == i) && !(thisCellObj.col-1 == j && thisCellObj.row == i) && !(thisCellObj.col == j && thisCellObj.row+1 == i) && !(thisCellObj.col == j && thisCellObj.row-1 == i))
+{
+  thisPlayer.board[i][j].status = 'X'
+}
+}
+}
+lastCol = thisCellObj.col
+lastRow = thisCellObj.row
+arrayToTable(thisPlayer)
+}
+  //This if statement is used to ensure that the player can only place ship tiles in a straight line
+  if(thisPlayer[shipType] >= 2)
+{
+  //Used if ship is placed vertically
+  if(thisCellObj.row == lastRow + 1 || thisCellObj.row == lastRow - 1 || vertShip == 1)
+{
+    for(let i = 0; i < row; i++)
+  {
+      for(let j = 0; j < col; j++)
+    {
+        if((thisPlayer.board[i][j].status == '-') ||(thisPlayer.board[i][j].status == 'X'))
+      {
+        if(i + 1 < 10 && i - 1 > -1)
+        {
+          if((thisPlayer.board[i+1][j].status == shipType) || (thisPlayer.board[i-1][j].status == shipType))
+          {
+            thisPlayer.board[i][j].status = '-'
+          }
+          else
+          {
+            thisPlayer.board[i][j].status = 'X'
+          }
+        }
+        else if(i == 0)
+        {
+          if(thisPlayer.board[i+1][j].status == shipType)
+          {
+            thisPlayer.board[i][j].status = '-'
+          }
+          else
+          {
+            thisPlayer.board[i][j].status = 'X'
+          }
+        }
+        else if(i == 9)
+        {
+          if(thisPlayer.board[i-1][j].status == shipType)
+          {
+            thisPlayer.board[i][j].status = '-'
+          }
+          else
+          {
+            thisPlayer.board[i][j].status = 'X'
+          }
+        }
+      }
+    }
+    }
+    vertShip = 1;
+}
+//Used if ship is placed horizontally 
+else
+  {
+    for(let i = 0; i < row; i++)
+  {
+      for(let j = 0; j < col; j++)
+    {
+        if((thisPlayer.board[i][j].status == '-') ||(thisPlayer.board[i][j].status == 'X'))
+      {
+        if(j + 1 < 10 && j - 1 > -1)
+        {
+          if((thisPlayer.board[i][j+1].status == shipType) || (thisPlayer.board[i][j-1].status == shipType))
+          {
+            thisPlayer.board[i][j].status = '-'
+          }
+          else
+          {
+            thisPlayer.board[i][j].status = 'X'
+          }
+        }
+        else if(j == 0)
+        {
+          if(thisPlayer.board[i][j+1].status == shipType)
+          {
+            thisPlayer.board[i][j].status = '-'
+          }
+          else
+          {
+            thisPlayer.board[i][j].status = 'X'
+          }
+        }
+        else if(j == 9)
+        {
+          if(thisPlayer.board[i][j-1].status == shipType)
+          {
+            thisPlayer.board[i][j].status = '-'
+          }
+          else
+          {
+            thisPlayer.board[i][j].status = 'X'
+          }
+        }
+      }
+    }
+    }
+  }
+  arrayToTable(thisPlayer)
+}
+//Checks if all tiles for a ship have been placed, and if so, prepares the board for next ship  
+if(thisPlayer[shipType] == shipTiles)
+  {
+    vertShip = 0
+    lastCol = -1
+    lastRow = -1
+    for(let i = 0; i < row; i++)
+    {
+      for(let j = 0; j < col; j++)
+      {
+        if(thisPlayer.board[i][j].status == 'X')
+        {
+          thisPlayer.board[i][j].status = '-'
+        }
+      }
+    }
+    arrayToTable(thisPlayer)
+  }
+}
+}
+
+//setUpComplete prepares the board for the playPhase once all ships have been placed
+function setUpComplete(thisPlayer){
+  for(let i = 0; i < row; i++)
+  {
+    for(let j = 0; j < col; j++)
+    {
+      thisPlayer.board[i][j].status = '~'
+      thisPlayer.board[i][j].color = 'aqua'
+    }
+  }
+  arrayToTable(thisPlayer)
+}
+
+//playPhase is used during gameplay, to determine the outcome of a turn
+function playPhase(thisPlayer, thisCellObj, thisCell){
+  if(thisCellObj.status == '~')
+  {
+    player1.playerFace.textContent = '(ಠ_ಠ)'
+    player2.playerFace.textContent = '(＾▽＾)'
+    if(textDisplayed == 1)
+    {
+      player1.playerText.textContent = 'Player 1'
+      player1.playerText.style.color = 'white'
+      player2.playerText.textContent = 'Player 2'
+      player2.playerText.style.color = 'white'
+      clearInterval(textFlash)
+      textFlash = 0
+      textDisplayed = 0
+    }
+    if(thisCellObj.ship == 'NA')
+    {
+      thisCellObj.status = 'X'
+      thisCellObj.color = 'grey'
+      thisCell.textContent = thisCellObj.status
+      thisCell.style.color = thisCellObj.color
+    }
+    else
+    {
+      thisCellObj.status = 'O'
+      thisCellObj.color = 'red'
+      thisCell.textContent = thisCellObj.status
+      thisCell.style.color = thisCellObj.color
+      thisPlayer[thisCellObj.ship]--
+      thisPlayer.totalHp--
+      if(thisPlayer.playerNum == 1)
+    {
+      thisPlayer.playerFace.textContent = '(ಠ益ಠ)'
+    }
+    else{
+      thisPlayer.playerFace.textContent = '(^_^;)'
+    }
+
+
+
+      if(thisPlayer[thisCellObj.ship] == 0)
+      {
+        thisPlayer.playerText.textContent = ('You sunk my ' + ships[thisCellObj.ship]);
+        thisPlayer.shipList[thisCellObj.ship].style.textDecoration = 'line-through';
+        thisPlayer.playerText.style.color = 'orange'
+        textFlash = setInterval(function(){
+          flashingText(thisPlayer.playerText)
+        }, 500)
+        textDisplayed = 1
+        if(thisPlayer.playerNum == 1)
+        {
+          thisPlayer.playerFace.textContent = '(ᗒ_ᗕ)'
+          player2.playerFace.textContent = '(^o^)'
+        }
+        else{
+          thisPlayer.playerFace.textContent = '(⊙▽⊙)'
+          player1.playerFace.textContent = '(ಠ‿ಠ)'
+        }
+      }
+
+      if(thisPlayer.totalHp == 0)
+      {
+        if(thisPlayer.playerNum == 1)
+        {
+          turnText.textContent = 'Player 2 Wins!'
+          turnText.style.color = 'orange'
+          textFlash = setInterval(function(){
+          flashingText(turnText)
+        }, 500)
+          player2.playerFace.textContent = '(≧∇≦)'
+          player1.playerFace.textContent = '(O_o)'
+          turn = 0
+          player1.playerText.textContent = 'Player 1'
+          player1.playerText.style.color = 'white'
+          player2.playerText.textContent = 'Player 2'
+          player2.playerText.style.color = 'white'
+        }
+        else
+        {
+          turnText.textContent = 'Player 1 Wins!'
+          turnText.style.color = 'orange'
+          textFlash = setInterval(function(){
+          flashingText(turnText)
+        }, 500)
+          player2.playerFace.textContent = '(Ｔ▽Ｔ)'
+          player1.playerFace.textContent = '(ಠ‿ᗕ)'
+          turn = 0
+          player1.playerText.textContent = 'Player 1'
+          player1.playerText.style.color = 'white'
+          player2.playerText.textContent = 'Player 2'
+          player2.playerText.style.color = 'white'
+        }
+      }
+    }
+    if(turn == 1)
+    {
+      turn = 2
+      turnText.textContent = "Player 2's Turn"
+    }
+    else if(turn == 2)
+    {
+      turn = 1
+      turnText.textContent = "Player 1's Turn"
+    }
+  }
+}
+
+  function flashingText(thistext){
+    if(thistext.style.color == 'orange')
+  {
+    thistext.style.color = 'orangered'
+  }
+    else if(thistext.style.color == 'orangered')
+  {
+    thistext.style.color = 'orange'
+  }
+  }
+
+arrayToTable(player1);
+arrayToTable(player2);
+</script>
+
+
+
+</body>
+
+
+
+
+</html>
